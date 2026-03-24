@@ -21,8 +21,8 @@ export default function Support() {
     <div className="min-h-screen bg-gray-50">
 
       {/* HERO SECTION */}
-      <section className="bg-green-600 text-white py-12 text-center">
-        <h1 className="text-3xl font-bold">DesiCart Support</h1>
+      <section className="bg-red-gradient text-white py-12 text-center">
+        <h1 className="text-3xl font-bold">flowerKart Support</h1>
         <p className="mt-2 text-sm">
           We're here to help you 24/7 🚀
         </p>
@@ -64,7 +64,7 @@ export default function Support() {
               type="text"
               name="name"
               placeholder="Your Name"
-              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-red-500"
               onChange={handleChange}
               required
             />
@@ -73,7 +73,7 @@ export default function Support() {
               type="email"
               name="email"
               placeholder="Your Email"
-              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-red-500"
               onChange={handleChange}
               required
             />
@@ -82,14 +82,14 @@ export default function Support() {
               name="message"
               rows="4"
               placeholder="Describe your issue..."
-              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-red-500"
               onChange={handleChange}
               required
             ></textarea>
 
             <button
               type="submit"
-              className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition"
+              className="w-full bg-red-gradient text-white py-3 rounded-md hover:opacity-90 transition"
             >
               Submit Request
             </button>

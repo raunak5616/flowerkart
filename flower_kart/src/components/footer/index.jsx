@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 export default function Footer() {
   const navigate = useNavigate();
   return (
-    <footer className="bg-emerald-700 text-white mt-8">
+    <footer className="bg-red-gradient text-white mt-8">
 
       <div className="max-w-6xl mx-auto px-6 py-6 grid md:grid-cols-3 gap-6">
 
         {/* Brand */}
         <div>
-          <h2 className="text-lg font-semibold mb-2">DesiCart</h2>
-          <p className="text-xs text-emerald-100">
+          <h2 className="text-lg font-semibold mb-2">flowerKart</h2>
+          <p className="text-xs text-red-100">
             Fresh groceries delivered quickly.
           </p>
         </div>
@@ -18,7 +18,7 @@ export default function Footer() {
         {/* Links */}
         <div>
           <h3 className="text-sm font-semibold mb-2">Quick Links</h3>
-          <ul className="space-y-1 text-xs text-emerald-100">
+          <ul className="space-y-1 text-xs text-red-100">
             <li className="hover:text-white cursor-pointer" onClick={() => navigate("/")}>Home</li>
             <li className="hover:text-white cursor-pointer" onClick={() => navigate("/shop")}>Shop</li>
             <li className="hover:text-white cursor-pointer" onClick={() => navigate("/cart")}>Cart</li>
@@ -29,7 +29,7 @@ export default function Footer() {
         {/* Social */}
         <div>
           <h3 className="text-sm font-semibold mb-2">Follow</h3>
-          <div className="flex gap-3 text-sm text-emerald-100">
+          <div className="flex gap-3 text-sm text-red-100">
             <span className="hover:text-white cursor-pointer">🌐</span>
             <span className="hover:text-white cursor-pointer">📘</span>
             <span className="hover:text-white cursor-pointer">📸</span>
@@ -39,8 +39,8 @@ export default function Footer() {
       </div>
 
       {/* Bottom */}
-      <div className="border-t border-emerald-600 text-center py-3 text-xs text-emerald-100">
-        © {new Date().getFullYear()} DesiCart —
+      <div className="border-t border-white/20 text-center py-3 text-xs text-red-100">
+        © {new Date().getFullYear()} flowerKart —
         <span className="font-semibold text-white">
           {" "}Raunak Kumar
         </span>

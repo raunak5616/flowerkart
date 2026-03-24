@@ -1,7 +1,7 @@
 {
-  "name": "desi_cart-backend",
+  "name": "flower_kart-backend",
   "version": "1.0.0",
-  "description": "Backend for Desi Cart application",
+  "description": "Backend for flowerKart application",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -12,14 +12,14 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "cloudinary": "^2.9.0",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.0.0",
-    "mongoose": "^9.1.5",
-    "multer": "^2.1.1",
+    "mongoose": "^8.1.1",
+    "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
     "razorpay": "^2.9.6"
   },

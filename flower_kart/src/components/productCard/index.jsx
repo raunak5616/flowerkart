@@ -68,6 +68,22 @@ export default function RecipeReviewCard({ product }) {
           }}
           className="text-gray-700"
         >
+          {product?.name}
+        </Typography>
+        <Typography
+          component="div"
+          fontWeight="bold"
+          sx={{
+            p: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            height: "3.6em", // fixed height for 2 lines
+          }}
+          className="text-gray-700"
+        >
           {product?.description}
         </Typography>
 

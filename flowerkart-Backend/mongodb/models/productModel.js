@@ -14,7 +14,11 @@ const productSchema = new mongoose.Schema(
         url: { type: String, required: true },
         public_id: { type: String, required: true }
       }
-    ]
+    ],
+    shopId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Shop"
+    }
   },
   { timestamps: true }
 );

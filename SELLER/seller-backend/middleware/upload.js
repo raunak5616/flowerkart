@@ -5,7 +5,7 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 const storage = new CloudinaryStorage({
   cloudinary:cloudinary,
   params: {
-    folder: "DESI_Cart",
+    folder: "flowerKart",
     allowed_formats: ["jpg", "png", "jpeg", "webp"],
   },
 });

@@ -45,7 +45,7 @@ export default function Product() {
               onClick={() => setSelectedCategory(cat)}
               className={`p-2 rounded-md cursor-pointer transition-colors ${
                 selectedCategory === cat
-                  ? "bg-green-600 text-white font-semibold"
+                  ? "bg-red-gradient text-white font-semibold shadow-sm"
                   : "hover:bg-gray-100"
               }`}
             >
@@ -64,7 +64,7 @@ export default function Product() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                 selectedCategory === cat
-                  ? "bg-green-600 text-white border-green-600"
+                  ? "bg-red-gradient text-white border-red-600 shadow-sm"
                   : "bg-white text-gray-600 border-gray-200"
               }`}
             >

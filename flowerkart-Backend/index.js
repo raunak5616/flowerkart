@@ -131,6 +131,17 @@ app.post("/user-data/:userId", async (req, res) => {
   }
 });
 
+// Fetch Orders for Profile
+app.get("/orders/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const orders = await Order.find({ userId: new mongoose.Types.ObjectId(userId) }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
 
 
 /* server */
@@ -142,6 +153,17 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`http://localhost:${PORT}`);
     });
+
+    // Global Error Handler
+    app.use((err, req, res, next) => {
+      console.error("GLOBAL ERROR HANDLER 👉", err);
+      res.status(500).json({ 
+        message: "Internal Server Error", 
+        error: err.message,
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+      });
+    });
+
   } catch (error) {
     console.log("Error in starting server:", error);
   }

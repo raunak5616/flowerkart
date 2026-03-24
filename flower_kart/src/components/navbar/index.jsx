@@ -68,10 +68,10 @@ export default function Navbar() {
 
             {/* LOGO */}
             <div
-              className="text-xl font-bold text-green-600 cursor-pointer"
+              className="text-xl font-bold text-red-600 cursor-pointer"
               onClick={() => navigate("/")}
             >
-              DesiCart
+              flowerKart
             </div>
 
             {/* LOCATION */}
@@ -79,7 +79,7 @@ export default function Navbar() {
               onClick={detectLocation}
               className="hidden sm:flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1 rounded-md"
             >
-              <span className="material-symbols-outlined text-green-600">
+              <span className="material-symbols-outlined text-red-600">
                 location_on
               </span>
 
@@ -100,7 +100,7 @@ export default function Navbar() {
                   end
                   className={({ isActive }) =>
                     `px-3 py-2 rounded-md text-sm font-medium transition ${isActive
-                      ? "bg-green-600 text-white"
+                      ? "bg-red-gradient text-white shadow-lg"
                       : "text-gray-700 hover:bg-gray-100"
                     }`
                   }
@@ -231,7 +231,7 @@ export default function Navbar() {
               end
               className={({ isActive }) =>
                 `px-3 py-2 rounded-md text-base font-medium ${isActive
-                  ? "bg-green-600 text-white"
+                  ? "bg-red-gradient text-white"
                   : "text-gray-700 hover:bg-gray-100"
                 }`
               }
@@ -248,7 +248,7 @@ export default function Navbar() {
               <button
                 onClick={() => {
                   if (!user?._id) return;
-                  navigate(`/profile/${user._id}`);
+                  navigate("/profile");
                 }}
                 className="text-left px-3 py-2 text-base hover:bg-gray-100 rounded-md"
               >

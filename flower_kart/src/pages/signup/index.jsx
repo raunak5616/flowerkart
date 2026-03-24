@@ -57,7 +57,7 @@ console.log(err);
           Create Account
         </h1>
         <p className="mb-6 text-center text-sm text-gray-500">
-          Join देशीCart and start shopping smarter
+          Join flowerKart and start shopping smarter
         </p>
 
         {/* FORM */}
@@ -74,7 +74,7 @@ console.log(err);
               placeholder="John Doe"
               onChange={onHandleChange}
               className="rounded-2xl border border-gray-300 px-4 py-3 text-sm
-                         focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                         focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
           </div>
 
@@ -89,7 +89,7 @@ console.log(err);
               placeholder="you@example.com"
               onChange={onHandleChange}
               className="rounded-2xl border border-gray-300 px-4 py-3 text-sm
-                         focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                         focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -102,7 +102,7 @@ console.log(err);
               placeholder="+123 456 7890"
               onChange={onHandleChange}
               className="rounded-2xl border border-gray-300 px-4 py-3 text-sm
-                         focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                         focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
           </div>
 
@@ -137,7 +137,7 @@ console.log(err);
               placeholder="Re-enter password"
               onChange={(e) => setconfirmPassword(e.target.value)}
               className="rounded-2xl border border-gray-300 px-4 py-3 text-sm
-                         focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                         focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
           </div>
 
@@ -147,13 +147,13 @@ console.log(err);
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 accent-black"
+              className="mt-1 accent-red-600"
             />
             <p>
               I agree to the{" "}
               <span
                 onClick={() => setShowTnC(true)}
-                className="cursor-pointer font-medium text-black hover:underline"
+                className="cursor-pointer font-medium text-red-600 hover:underline"
               >
                 Terms & Conditions
               </span>
@@ -167,7 +167,7 @@ console.log(err);
             className={`mt-2 rounded-2xl py-3 text-white font-medium transition-all duration-200
               ${
                 agreed
-                  ? "bg-black hover:scale-105 hover:bg-gray-900 active:scale-95"
+                  ? "bg-red-gradient hover:scale-105 hover:opacity-90 active:scale-95"
                   : "bg-gray-400 cursor-not-allowed"
               }`}
           >
@@ -178,7 +178,7 @@ console.log(err);
           <p className="text-center text-sm text-gray-500">
             Already have an account?{" "}
             <span
-              className="cursor-pointer font-medium text-black hover:underline"
+              className="cursor-pointer font-medium text-red-600 hover:underline"
               onClick={() => navigate("/login")}
             >
               Login
@@ -196,7 +196,7 @@ console.log(err);
 
               <div className="max-h-64 overflow-y-auto text-sm text-gray-600 space-y-3">
                 <p>
-                  By creating an account on देशीCart, you agree to the following:
+                  By creating an account on flowerKart, you agree to the following:
                 </p>
                 <p>
                   • You are responsible for maintaining account security.<br />
@@ -221,7 +221,7 @@ console.log(err);
                     setAgreed(true);
                     setShowTnC(false);
                   }}
-                  className="rounded-lg bg-black px-4 py-2 text-sm text-white hover:bg-gray-900"
+                  className="rounded-lg bg-red-gradient px-4 py-2 text-sm text-white hover:opacity-90"
                 >
                   I Agree
                 </button>

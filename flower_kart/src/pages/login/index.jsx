@@ -45,7 +45,7 @@ const Login = () => {
 
         {/* TITLE */}
         <h1 className="mb-2 text-center text-3xl font-semibold text-gray-900">
-          देशीCart
+          flowerKart
         </h1>
         <p className="mb-6 text-center text-sm text-gray-500">
           Welcome back! Please login to your account
@@ -66,7 +66,7 @@ const Login = () => {
               onChange={onLoginChnage}
               placeholder="you@example.com"
               className="rounded-2xl border border-gray-300 px-4 py-3 text-sm
-                         focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                         focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
           </div>
 
@@ -82,22 +82,22 @@ const Login = () => {
               placeholder="••••••••"
               onChange={onLoginChnage}
               className="rounded-2xl border border-gray-300 px-4 py-3 text-sm
-                         focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+                         focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
           </div>
 
           {/* FORGOT PASSWORD */}
           <div className="flex justify-end">
-            <span className="cursor-pointer text-sm text-gray-600 hover:text-black hover:underline">
+            <span className="cursor-pointer text-sm text-gray-600 hover:text-red-600 hover:underline">
               Forgot password?
             </span>
           </div>
 
           {/* LOGIN BUTTON */}
           <button
-            className="mt-2 rounded-2xl bg-black py-3 text-white font-medium
+            className="mt-2 rounded-2xl bg-red-gradient py-3 text-white font-medium
                        transition-all duration-200
-                       hover:scale-105 hover:bg-gray-900
+                       hover:scale-105 hover:opacity-90
                        active:scale-95"
             onClick={onsubmitPress}
           >
@@ -107,7 +107,7 @@ const Login = () => {
           {/* SIGN UP */}
           <p className="text-center text-sm text-gray-500">
             Don’t have an account?{" "}
-            <span className="cursor-pointer font-medium text-black hover:underline" onClick={signup}>
+            <span className="cursor-pointer font-medium text-red-600 hover:underline" onClick={signup}>
               Sign up
             </span>
           </p>

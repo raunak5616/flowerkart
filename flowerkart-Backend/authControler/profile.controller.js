@@ -1,14 +1,21 @@
 import UserProfile from "../mongodb/models/userProfilemodel.js";
 import User from "../mongodb/models/userModel.js";
+import mongoose from "mongoose";
 
 export const updateProfile = async (req, res) => {
   try {
     const { name, email, phone, address } = req.body;
-
+if (!req.user || !req.user.id) {
+  return res.status(401).json({ message: "Unauthorized - user not found" });
+}
     console.log("BODY:", req.body);
     console.log("FILE:", req.file);
 
+    console.log("REQ.USER 👉", req.user);
     const userId = req.user.id;
+    if (!userId) {
+      return res.status(401).json({ message: "User ID missing from token" });
+    }
     const updateData = { name, email, phone, address };
 
     if (req.file) {
@@ -18,8 +25,16 @@ export const updateProfile = async (req, res) => {
       };
     }
 
+    let objectId;
+    try {
+      objectId = new mongoose.Types.ObjectId(userId);
+    } catch (idError) {
+      console.log("INVALID OBJECT ID 👉", userId);
+      return res.status(400).json({ message: "Invalid User ID format" });
+    }
+
     const updatedUser = await UserProfile.findOneAndUpdate(
-      { userId: userId },
+      { userId: objectId },
       updateData,
       {
         new: true,
@@ -33,8 +48,8 @@ export const updateProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.log("ERROR:", error); // 🔥 add this for debugging
-    res.status(500).json({ message: "Error updating profile" });
+    console.error("FULL PROFILE UPDATE ERROR 👉", error);
+    res.status(500).json({ message: "Error updating profile", error: error.message });
   }
 };
 

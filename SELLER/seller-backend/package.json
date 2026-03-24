@@ -1,7 +1,7 @@
 {
-  "name": "seller-backend",
+  "name": "flower_kart-seller-backend",
   "version": "1.0.0",
-  "description": "Backend API for DESI Cart seller panel",
+  "description": "Backend API for flowerKart seller panel",
   "main": "index.js",
   "type": "module",
   "scripts": {
