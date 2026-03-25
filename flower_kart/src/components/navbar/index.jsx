@@ -7,6 +7,9 @@ import {
   MenuItem,
   MenuItems,
   Transition,
+  Dialog,
+  DialogPanel,
+  DialogTitle,
 } from "@headlessui/react";
 
 import { useLocationContext } from "../../context/locationContext/useLocationContext";
@@ -25,9 +28,17 @@ const navigation = [
 export default function Navbar() {
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
-  const { address, detectLocation } = useLocationContext();
+  const { address, setAddress, coordinates, detectLocation } = useLocationContext();
   const [avatar, setAvatar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [addressDetails, setAddressDetails] = useState({
+    houseNo: "",
+    street: "",
+    landmark: "",
+    pincode: "",
+    phone: ""
+  });
 
   const handleSearch = (e) => {
     if (e.key === "Enter" && searchTerm.trim()) {
@@ -76,7 +87,7 @@ export default function Navbar() {
 
             {/* LOCATION */}
             <div
-              onClick={detectLocation}
+              onClick={() => setIsLocationModalOpen(true)}
               className="hidden sm:flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1 rounded-md"
             >
               <span className="material-symbols-outlined text-red-600">
@@ -293,6 +304,141 @@ export default function Navbar() {
         </div>
 
       </DisclosurePanel>
+
+      {/* LOCATION MODAL */}
+      <Dialog open={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all">
+            <DialogTitle className="text-xl font-bold text-gray-900 mb-2">Delivery Details</DialogTitle>
+            <p className="text-sm text-gray-500 mb-6">Enter your exact location so our partners can find you easily.</p>
+            
+            <div className="space-y-4">
+              <button
+                onClick={detectLocation}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-600 rounded-xl font-medium hover:bg-blue-100 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">my_location</span>
+                Auto-detect (City/State)
+              </button>
+
+              {coordinates && (
+                <div className="w-full h-40 rounded-xl overflow-hidden border border-gray-200 mt-2 shadow-inner">
+                  <iframe
+                    title="Location Map"
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    scrolling="no"
+                    marginHeight="0"
+                    marginWidth="0"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.lng - 0.005},${coordinates.lat - 0.005},${coordinates.lng + 0.005},${coordinates.lat + 0.005}&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`}
+                  ></iframe>
+                </div>
+              )}
+
+              <div className="relative flex items-center py-2">
+                <div className="flex-grow border-t border-gray-200"></div>
+                <span className="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium uppercase tracking-wider">and</span>
+                <div className="flex-grow border-t border-gray-200"></div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">House/Flat No *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 101"
+                      value={addressDetails.houseNo}
+                      onChange={(e) => setAddressDetails({ ...addressDetails, houseNo: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Pincode *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 400001"
+                      value={addressDetails.pincode}
+                      onChange={(e) => setAddressDetails({ ...addressDetails, pincode: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Street/Area *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. MG Road, Near Park"
+                    value={addressDetails.street}
+                    onChange={(e) => setAddressDetails({ ...addressDetails, street: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Landmark</label>
+                    <input
+                      type="text"
+                      placeholder="Optional"
+                      value={addressDetails.landmark}
+                      onChange={(e) => setAddressDetails({ ...addressDetails, landmark: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Phone *</label>
+                    <input
+                      type="text"
+                      placeholder="10-digit number"
+                      value={addressDetails.phone}
+                      onChange={(e) => setAddressDetails({ ...addressDetails, phone: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    if (!addressDetails.houseNo || !addressDetails.street || !addressDetails.pincode || !addressDetails.phone) {
+                      alert("Please fill all required fields (*)");
+                      return;
+                    }
+                    if (address === "Select Location") {
+                      alert("Please use Auto-detect to set your City/State first.");
+                      return;
+                    }
+
+                    const parts = [
+                      `House: ${addressDetails.houseNo}`,
+                      `Street: ${addressDetails.street}`,
+                      addressDetails.landmark ? `Landmark: ${addressDetails.landmark}` : '',
+                      `City/State: ${address}`,
+                      `Pincode: ${addressDetails.pincode}`,
+                      `Phone: ${addressDetails.phone}`
+                    ].filter(Boolean);
+                    
+                    const finalAddress = parts.join(", ");
+                    if(setAddress) setAddress(finalAddress);
+                    localStorage.setItem("deliveryAddress", finalAddress);
+                    setIsLocationModalOpen(false);
+                    // Retain the form details or clear them depending on preference. 
+                    // Keeping them makes it easier to edit later.
+                  }}
+                  className="w-full py-3 bg-red-gradient text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-md"
+                >
+                  Confirm Location
+                </button>
+              </div>
+            </div>
+          </DialogPanel>
+        </div>
+      </Dialog>
     </Disclosure>
   );
 }

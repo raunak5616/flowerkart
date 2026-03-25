@@ -8,6 +8,9 @@ import razorpay from "./utils/razorpay.js";
 import crypto from "crypto";
 import Order from "./mongodb/models/paymentModel.js";
 import UserData from "./mongodb/models/userDataModel.js";
+import Product from "./mongodb/models/productModel.js";
+import UserAccount from "./mongodb/models/userModel.js";
+import ShopAccount from "./mongodb/models/shop.model.js";
 
 dotenv.config();
 
@@ -29,7 +32,7 @@ app.get("/", (req, res) => {
 
 app.post("/create-order", async (req, res) => {
   try {
-    const { amount, userId, cartItems } = req.body;
+    const { amount, userId, cartItems, deliveryAddress, coordinates } = req.body;
 
     const order = await razorpay.orders.create({
       amount: amount * 100,
@@ -41,6 +44,8 @@ app.post("/create-order", async (req, res) => {
       userId,
       items: cartItems,
       amount,
+      deliveryAddress,
+      coordinates,
       razorpay_order_id: order.id,
       status: "Pending"
     });
@@ -89,6 +94,17 @@ app.post("/verify-payment", async (req, res) => {
     }
 
     if (isAuthentic) {
+      // Decrement stock for each item in the order
+      if (existingOrder && existingOrder.items) {
+        for (const item of existingOrder.items) {
+          const productId = item._id || item.id;
+          if (productId) {
+            await Product.findByIdAndUpdate(productId, {
+              $inc: { stock: -(item.qty || 1) }
+            });
+          }
+        }
+      }
       res.json({ success: true, message: "Payment verified", order: existingOrder });
     } else {
       res.status(400).json({ success: false, message: "Invalid signature", order: existingOrder });
@@ -142,8 +158,60 @@ app.get("/orders/:userId", async (req, res) => {
   }
 });
 
+// Admin APIs
+app.get("/api/admin/users", async (req, res) => {
+  try {
+    const users = await UserAccount.find().sort({ createdAt: -1 });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
 
+app.delete("/api/admin/users/:id", async (req, res) => {
+  try {
+    await UserAccount.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+});
 
+app.get("/api/admin/shops", async (req, res) => {
+  try {
+    const shops = await ShopAccount.find().sort({ createdAt: -1 });
+    res.json(shops);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch shops" });
+  }
+});
+
+app.delete("/api/admin/shops/:id", async (req, res) => {
+  try {
+    await ShopAccount.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete shop" });
+  }
+});
+
+app.get("/api/admin/orders", async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
+app.delete("/api/admin/orders/:id", async (req, res) => {
+  try {
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete order" });
+  }
+});
 /* server */
 async function startServer() {
   try {

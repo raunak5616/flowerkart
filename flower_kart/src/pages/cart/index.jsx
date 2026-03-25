@@ -3,10 +3,12 @@ import { CartCard } from "../../components/cartCard";
 import { useCart } from "../../context/card.context/useCartContext.js";
 import { useState } from "react";
 import { useAuth } from "../../context/auth.context";
+import { useLocationContext } from "../../context/locationContext/useLocationContext";
 
 export const Cart = () => {
   const { cart } = useCart();
   const { user } = useAuth();
+  const { address, coordinates } = useLocationContext();
   const [loading, setLoading] = useState(false);
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * item.qty,
@@ -21,10 +23,17 @@ export const Cart = () => {
       return;
     }
     setLoading(true);
+
+    if (!address || address === "Select Location") {
+      alert("Please provide a delivery address by setting your location in the top menu.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/create-order`,
-        { amount: subtotal, userId: user?._id, cartItems: cart },
+        { amount: subtotal, userId: user?._id, cartItems: cart, deliveryAddress: address, coordinates },
         { headers: { "Content-Type": "application/json" } }
       );
 
