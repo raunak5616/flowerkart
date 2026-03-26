@@ -10,8 +10,10 @@ const signupModel = mongoose.Schema({
     images: {
   url: String,
   public_id: String
-}
+},
+rating: { type: Number, default: 0 },
+numReviews: { type: Number, default: 0 }
 });
-const user = mongoose.model("User",signupModel);
+const Shop = mongoose.model("Shop", signupModel, "users");
 
-export default user;
+export default Shop;

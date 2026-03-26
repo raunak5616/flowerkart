@@ -1,79 +1,68 @@
-import Card from "@mui/material/Card";
-import CardMedia from "@mui/material/CardMedia";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import CardActions from "@mui/material/CardActions";
-const ShopCard = ({ shop,onClick }) => {
-  const url = shop?.images?.url; 
+const ShopCard = ({ shop, onClick }) => {
+  const url = shop?.images?.[0]?.url || shop?.images?.url || "/no-image.png";
 
   return (
-    <Card
+    <div 
       onClick={() => onClick(shop._id)}
-      sx={{
-        width: 345,
-        height: 380,
-        boxShadow: 3,
-        display: "flex",
-        flexDirection: "column",
-        cursor: "pointer",
-      }}
+      className="group relative bg-white rounded-[2.5rem] p-5 transition-all duration-500 hover:shadow-[0_30px_60px_rgba(0,0,0,0.12)] hover:-translate-y-3 cursor-pointer border border-gray-100 flex flex-col h-[400px] w-full max-w-[340px] mx-auto overflow-hidden bg-gradient-to-b from-white to-gray-50/50"
     >
-      <CardMedia
-        component="img"
-        image={url || "/no-image.png"}
-        alt={shop?.shop || "shop image"}
-        sx={{
-          height: 200,
-          objectFit: "contain",
-          bgcolor: "white",
-          p: 1,
-        }}
-      />
+      {/* Decorative Background Element */}
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      
+      {/* Status Badge */}
+      <div className="absolute top-8 left-8 z-20 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm border border-gray-100/50 flex items-center gap-2">
+        <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-gray-900">Open Now</span>
+      </div>
 
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography
-          component="div"
-          fontWeight="bold"
-          sx={{
-            p: 1,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 1,
-            WebkitBoxOrient: "vertical",
-          }}
-          className="text-gray-700"
-        >
-          {shop?.shop}
-        </Typography>
+      {/* Image Section */}
+      <div className="relative h-48 w-full rounded-[2rem] overflow-hidden mb-6 shadow-inner bg-gray-100/30">
+        <img 
+          src={url} 
+          alt={shop?.shop}
+          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
 
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            p: 1,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 1,
-            WebkitBoxOrient: "vertical",
-          }}
-        >
-          {shop?.name}
-        </Typography>
-      </CardContent>
+      {/* Content Section */}
+      <div className="flex flex-col flex-1 px-2 relative z-10">
+        <div className="mb-4">
+          <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.25em] mb-1.5 translate-y-0 group-hover:-translate-y-1 transition-transform">
+            Authorized Partner
+          </p>
+          <h3 className="text-2xl font-black text-gray-900 leading-tight tracking-tight group-hover:text-red-600 transition-colors">
+            {shop?.shop || "FlowerKart Partner"}
+          </h3>
+        </div>
 
-      <CardActions
-        sx={{
-          mt: "auto",
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 1,
-        }}
-      >
-        {/* Add buttons here later */}
-      </CardActions>
-    </Card>
+        <div className="flex items-center gap-2 mb-6">
+          <span className="material-symbols-outlined text-gray-400 text-sm">person</span>
+          <p className="text-xs text-gray-500 font-bold tracking-wide">
+            {shop?.name || "Local Seller"}
+          </p>
+        </div>
+
+        <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100/50">
+          <div className="flex items-center gap-1">
+            <span className="material-symbols-outlined text-orange-400 text-xs">star</span>
+            <span className="text-xs font-black text-gray-900">
+              {shop?.rating > 0 ? shop.rating.toFixed(1) : "New"}
+            </span>
+            {shop?.numReviews > 0 && (
+              <span className="text-[10px] text-gray-400 font-bold ml-1">
+                ({shop.numReviews})
+              </span>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-1 text-red-600 font-black text-[10px] uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+            Visit Store
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

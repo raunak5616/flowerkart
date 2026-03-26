@@ -63,7 +63,7 @@ export const deleteProduct = async (req, res) => {
 export const getBillsByShop = async (req, res) => {
   try {
     const { shopId } = req.params;
-    const orders = await Order.find({ status: "Success" }).sort({ createdAt: -1 });
+    const orders = await Order.find({ status: { $in: ["Success", "Accepted", "Shipped", "Delivered"] } }).sort({ createdAt: -1 });
 
     const shopBills = orders.map(order => {
       const shopItems = order.items.filter(item => item.shopId === shopId);

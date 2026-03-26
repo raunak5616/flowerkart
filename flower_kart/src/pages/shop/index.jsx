@@ -35,6 +35,10 @@ const Shop = () => {
         return <p className="text-center mt-10">Loading shops...</p>;
     }
 
+    if (!shop || shop.length === 0) {
+        return <p className="text-center mt-10">No shops available at the moment.</p>;
+    }
+
     return (
         <main className="flex flex-wrap gap-6 justify-center mt-4">
            {shop.map((shops) => (

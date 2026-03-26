@@ -35,7 +35,11 @@ export const ShopByProduct = () => {
     }, [id]);
 
     if (loading) {
-        return <p>Products are loading...</p>;
+        return <p className="text-center mt-10">Products are loading...</p>;
+    }
+
+    if (!productsbyshop || productsbyshop.length === 0) {
+        return <p className="text-center mt-10">No products found for this shop.</p>;
     }
 
     return (

@@ -34,23 +34,23 @@ export const getShop = async (req,res) =>{
 
 export const getProductsByShopId = async (req, res) => {
     try {
-
         const { id } = req.params;
+        console.log("🚀 GET PRODUCTS BY SHOP ID REQUESTED:", id);
 
-        console.log("🚀 GET PRODUCTS BY SHOP HIT:", id);
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            console.error("❌ INVALID SHOP ID:", id);
+            return res.status(400).json({ message: "Invalid shop ID" });
+        }
 
-     
-
-const products = await productModel.find({
-  shopId: new mongoose.Types.ObjectId(id)
-});
-console.log("✅ Products fetched successfully:", products);
+        const products = await productModel.find({
+            shopId: new mongoose.Types.ObjectId(id)
+        });
+        
+        console.log(`✅ FOUND ${products.length} PRODUCTS FOR SHOP:`, id);
         res.status(200).json(products);
 
     } catch (error) {
-
         console.log("🔥 GET PRODUCTS BY SHOP ERROR 🔥", error);
-
         res.status(500).json({
             message: "Failed to fetch shop products",
             error: error.message

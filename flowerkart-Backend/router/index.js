@@ -4,6 +4,7 @@ import {getProducts, getProductsByShopId, getShop } from "../authControler/produ
 import { getProfile, updateProfile } from "../authControler/profile.controller.js";
 import { upload } from "../middleware/upload.js";
 import { verifyToken } from "../middleware/auth.js";
+import { submitReview } from "../authControler/reviewController.js";
 
 const router = express.Router();
 router.get("/products", getProducts);
@@ -13,5 +14,6 @@ router.get("/shop", getShop);
 router.post("/signup",signup);
 router.post("/login",Login);
 router.post("/profileUpdate",verifyToken,upload.single("images"),updateProfile);
+router.post("/review/:orderId", verifyToken, submitReview);
 
 export default router;

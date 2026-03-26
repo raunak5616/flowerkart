@@ -12,11 +12,21 @@ import Profile from "../../pages/profile";
 import Footer from "../../components/footer";
 import { ShopByProduct } from "../../pages/shopByProduct";
 import Favorite from "../../pages/fav";
-
+import { useReviewChecker } from "../../hooks/useReviewChecker";
+import ReviewModal from "../../components/ReviewModal";
 
 const AppRouter = () => {
+  const { pendingReviewOrder, setPendingReviewOrder } = useReviewChecker();
+
   return (
     <BrowserRouter>
+      {pendingReviewOrder && (
+        <ReviewModal 
+          isOpen={true} 
+          order={pendingReviewOrder} 
+          onClose={() => setPendingReviewOrder(null)} 
+        />
+      )}
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />

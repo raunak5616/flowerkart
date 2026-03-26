@@ -2,10 +2,12 @@ import CardMedia from "@mui/material/CardMedia";
 
 import "./index.css";
 import { useCart } from "../../context/card.context/useCartContext";
+import { findFavroite } from "../../utils/findFavroite";
 
 export const CartCard = ({ item }) => {
 
-    const { cartDispatch } = useCart();
+    const { cartDispatch, favourite } = useCart();
+    const isFavorite = findFavroite(favourite, item?._id);
 
     const {
         images: [{ url } = {}] = [],
@@ -22,6 +24,20 @@ export const CartCard = ({ item }) => {
         cartDispatch({
             type: "DECREMENT_QTY",
             payload: item._id,
+        });
+    };
+
+    const onRemoveClick = () => {
+        cartDispatch({
+            type: "REMOVE_FROM_CART",
+            payload: item._id,
+        });
+    };
+
+    const onFavoriteClick = () => {
+        cartDispatch({
+            type: isFavorite ? "REMOVE_FROM_FAVORITE" : "ADD_TO_FAVORITE",
+            payload: isFavorite ? item._id : item,
         });
     };
 
@@ -44,12 +60,24 @@ export const CartCard = ({ item }) => {
                 </div>
 
                 <div className="des">
-                    <h4>{item?.title}</h4>
+                    <h4>{item?.title || item?.name}</h4>
                     <div className="slug">{item?.slug}</div>
 
                     <div className="actions">
-                        <span>❤️</span>
-                        <span>❌</span>
+                        <span 
+                            onClick={onFavoriteClick} 
+                            className="cursor-pointer hover:scale-125 transition-transform"
+                            title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+                        >
+                            {isFavorite ? "❤️" : "🤍"}
+                        </span>
+                        <span 
+                            onClick={onRemoveClick} 
+                            className="cursor-pointer hover:scale-125 transition-transform"
+                            title="Remove from Cart"
+                        >
+                            ❌
+                        </span>
                     </div>
                 </div>
 

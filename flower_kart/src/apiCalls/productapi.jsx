@@ -49,3 +49,19 @@ export const updateProfile = async (id, formData) => {
     throw error;
   }
 };
+
+export const submitReview = async (orderId, reviewData) => {
+  const URL = `${import.meta.env.VITE_MONGO_URI}/review/${orderId}`;
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.post(URL, reviewData, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("🔥 SUBMIT REVIEW ERROR 🔥", error);
+    throw error;
+  }
+};
