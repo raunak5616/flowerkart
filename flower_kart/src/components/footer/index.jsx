@@ -19,7 +19,11 @@ export default function Footer() {
             </p>
             <div className="flex gap-4 pt-2">
               {['facebook', 'instagram', 'twitter', 'youtube'].map((social) => (
-                <button key={social} className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all border border-white/5">
+                <button 
+                  key={social} 
+                  onClick={() => window.open(`https://www.${social}.com`, '_blank')}
+                  className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all border border-white/5"
+                >
                   <span className="material-symbols-outlined text-sm">public</span>
                 </button>
               ))}
@@ -34,7 +38,7 @@ export default function Footer() {
                 <li 
                   key={link} 
                   className="hover:text-white hover:translate-x-1 transition-all cursor-pointer flex items-center gap-2 group"
-                  onClick={() => navigate(link === 'Home' ? '/' : `/${link.toLowerCase().replace(' ', '')}`)}
+                  onClick={() => navigate(link === 'Home' ? '/' : link === 'Track Order' ? '/profile' : `/${link.toLowerCase().replace(' ', '')}`)}
                 >
                   <span className="h-1 w-1 bg-white/40 rounded-full group-hover:bg-white transition-colors" />
                   {link}
@@ -48,7 +52,14 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-6 text-white/90">Support</h3>
             <ul className="space-y-3 text-sm text-red-50/70">
               {['Help Center', 'Shipping Policy', 'Returns', 'Contact Us'].map((item) => (
-                <li key={item} className="hover:text-white cursor-pointer transition-colors">{item}</li>
+                <li 
+                  key={item} 
+                  onClick={() => navigate('/support')}
+                  className="hover:text-white cursor-pointer transition-colors flex items-center gap-2 group"
+                >
+                  <span className="h-1 w-1 bg-white/40 rounded-full group-hover:bg-white transition-colors" />
+                  {item}
+                </li>
               ))}
             </ul>
           </div>
@@ -61,9 +72,12 @@ export default function Footer() {
               <input 
                 type="text" 
                 placeholder="Email address" 
-                className="bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-white/30 flex-1"
+                className="bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-white/30 flex-1 placeholder:text-red-50/30"
               />
-              <button className="bg-white text-red-600 p-2 rounded-lg font-bold hover:bg-red-50 transition-colors">
+              <button 
+                onClick={() => alert("Subscribed successfully!")}
+                className="bg-white text-red-600 p-2 rounded-lg font-bold hover:bg-red-50 transition-colors"
+              >
                 <span className="material-symbols-outlined text-sm">send</span>
               </button>
             </div>

@@ -70,7 +70,7 @@ export default function Navbar() {
   };
 
   return (
-    <Disclosure as="nav" className="bg-white border-b border-gray-200">
+    <Disclosure as="nav" className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
 
@@ -165,9 +165,9 @@ export default function Navbar() {
 
             {/* PROFILE MENU (Desktop only) */}
             <Menu as="div" className="relative hidden lg:block">
-              <MenuButton>
+              <MenuButton className="flex items-center focus:outline-none">
                 <img
-                  className="h-8 w-8 rounded-full object-cover"
+                  className="h-9 w-9 rounded-full object-cover border-2 border-transparent hover:border-red-500 transition-all shadow-sm"
                   src={avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"}
                   alt="Profile"
                 />
@@ -176,46 +176,66 @@ export default function Navbar() {
               <Transition
                 as={Fragment}
                 enter="transition duration-200"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
+                enterFrom="opacity-0 scale-95 translate-y-[-10px]"
+                enterTo="opacity-100 scale-100 translate-y-0"
                 leave="transition duration-150"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
+                leaveFrom="opacity-100 scale-100 translate-y-0"
+                leaveTo="opacity-0 scale-95 translate-y-[-10px]"
               >
-                <MenuItems className="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg ring-1 ring-black/5">
-                  {isAuthenticated ? (
-                    <>
-                      <MenuItem>
-                        <button
-                          onClick={() => navigate("/profile")}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                        >
-                          Profile
-                        </button>
-                      </MenuItem>
+                <MenuItems className="absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-black/5 overflow-hidden origin-top-right z-[60]">
+                  <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+                    <p className="text-xs text-gray-500 font-medium">Signed in as</p>
+                    <p className="text-sm font-bold text-gray-900 truncate">
+                      {user?.email || "Guest User"}
+                    </p>
+                  </div>
+                  <div className="p-2">
+                    {isAuthenticated ? (
+                      <>
+                        <MenuItem>
+                          {({ active }) => (
+                            <button
+                              onClick={() => navigate("/profile")}
+                              className={`${active ? 'bg-red-50 text-red-600' : 'text-gray-700'
+                                } group flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors`}
+                            >
+                              <span className="material-symbols-outlined mr-3 text-[20px]">person</span>
+                              My Profile
+                            </button>
+                          )}
+                        </MenuItem>
 
+                        <MenuItem>
+                          {({ active }) => (
+                            <button
+                              onClick={() => {
+                                logout();
+                                navigate("/login");
+                              }}
+                              className={`${active ? 'bg-red-50 text-red-600' : 'text-gray-700'
+                                } group flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors`}
+                            >
+                              <span className="material-symbols-outlined mr-3 text-[20px]">logout</span>
+                              Logout
+                            </button>
+                          )}
+                        </MenuItem>
+                      </>
+                    ) : (
                       <MenuItem>
-                        <button
-                          onClick={() => {
-                            logout();
-                            navigate("/login");
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                        >
-                          Logout
-                        </button>
+                        {({ active }) => (
+                          <button
+                            onClick={() => navigate("/login")}
+                            className={`${active ? 'bg-red-50 text-red-600' : 'text-gray-700'
+                              } group flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors`}
+                          >
+                            <span className="material-symbols-outlined mr-3 text-[20px]">login</span>
+                            Login / Sign up
+                          </button>
+                        )}
                       </MenuItem>
-                    </>
-                  ) : (
-                    <MenuItem>
-                      <button
-                        onClick={() => navigate("/login")}
-                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                      >
-                        Login
-                      </button>
-                    </MenuItem>
-                  )}
+                    )}
+                  </div>
                 </MenuItems>
               </Transition>
             </Menu>

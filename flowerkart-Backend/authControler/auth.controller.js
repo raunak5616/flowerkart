@@ -25,7 +25,7 @@ export const signup = async (req, res) => {
 
     const user = await User.create({
       name,
-      category:"shop",
+      role: "user", // Correct role
       email,
       phone,
       password: hashedPassword,
@@ -40,6 +40,7 @@ export const signup = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        role: user.role
       },
     });
   } catch (err) {
@@ -71,7 +72,12 @@ console.log("REQ BODY 👉", req.body);
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 3️⃣ Compare password
+    // 3️⃣ Verify Role
+    if (user.role !== "user") {
+        return res.status(403).json({ message: "Access denied. Role mismatch." });
+    }
+
+    // 4️⃣ Compare password
     const isPasswordValid = await bcryptjs.compare(
       password,
       user.password
@@ -81,11 +87,12 @@ console.log("REQ BODY 👉", req.body);
       return res.status(401).json({ message: "Invalid password" });
     }
 
-    // 4️⃣ Generate JWT
+    // 5️⃣ Generate JWT
     const token = jwt.sign(
       {
         id: user._id,
         email: user.email,
+        role: user.role
       },
       process.env.JWT_SECRET,
       {
@@ -93,7 +100,7 @@ console.log("REQ BODY 👉", req.body);
       }
     );
 
-    // 5️⃣ Send response
+    // 6️⃣ Send response
     res.status(200).json({
       message: "Login successful",
       token,
@@ -101,6 +108,7 @@ console.log("REQ BODY 👉", req.body);
         _id: user._id,
         email: user.email,
         name: user.name,
+        role: user.role
       },
     });
   } catch (error) {

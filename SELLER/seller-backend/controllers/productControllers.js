@@ -66,7 +66,7 @@ export const getBillsByShop = async (req, res) => {
     const orders = await Order.find({ status: { $in: ["Success", "Accepted", "Shipped", "Delivered"] } }).sort({ createdAt: -1 });
 
     const shopBills = orders.map(order => {
-      const shopItems = order.items.filter(item => item.shopId === shopId);
+      const shopItems = order.items.filter(item => item.shopId?.toString() === shopId);
       if (shopItems.length > 0) {
         const shopAmount = shopItems.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
         return {
@@ -94,7 +94,7 @@ export const getOrdersByShop = async (req, res) => {
     const orders = await Order.find({ status: { $ne: "Cancelled" } }).sort({ createdAt: -1 });
 
     const shopOrders = orders.map(order => {
-      const shopItems = order.items.filter(item => item.shopId === shopId);
+      const shopItems = order.items.filter(item => item.shopId?.toString() === shopId);
       if (shopItems.length > 0) {
         return {
           ...order._doc,

@@ -31,7 +31,7 @@ if (req.file) {
 const user = await User.create({
   name,
   email,
-  category:"shop",
+  role: "seller", // Correct role
   shop,
   phone,
   password: hashedPassword,
@@ -41,6 +41,7 @@ const user = await User.create({
     res.status(201).json({
       message: "User registered successfully",
       userId: user._id,
+      role: user.role
     });
 
   } catch (error) {
@@ -69,6 +70,11 @@ export const Login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
+    // Verify Role
+    if (user.role !== "seller") {
+        return res.status(403).json({ message: "Access denied. Role mismatch." });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -79,6 +85,7 @@ export const Login = async (req, res) => {
       {
         id: user._id,
         email: user.email,
+        role: user.role
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -88,6 +95,7 @@ export const Login = async (req, res) => {
       message: "Login successful",
       token,
       id: user._id,
+      role: user.role
     });
 
   } catch (error) {
