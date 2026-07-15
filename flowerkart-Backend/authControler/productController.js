@@ -3,11 +3,35 @@ import productModel from "../mongodb/models/productModel.js"
 import user from "../mongodb/models/shop.model.js";
 
 export const getProducts = async (req,res) =>{
+    const requestStart = performance.now();
+
     try {
-        console.log("🚀 GET PRODUCTS HIT")  ;
+        console.log("🚀 GET PRODUCTS HIT");
+
+        const queryStart = performance.now();
         const product = await productModel.find();
-        res.status(200).json(product);
+        const queryMs = performance.now() - queryStart;
+
+        const serializationStart = performance.now();
+        const payload = JSON.stringify(product);
+        const serializationMs = performance.now() - serializationStart;
+        const payloadBytes = Buffer.byteLength(payload);
+        const totalMs = performance.now() - requestStart;
+
+        console.log(
+            `[PERF] /api/auth/products -> query=${queryMs.toFixed(2)} ms, serialization=${serializationMs.toFixed(2)} ms, payload=${payloadBytes} bytes, total=${totalMs.toFixed(2)} ms`
+        );
+
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("X-Query-Time-Ms", queryMs.toFixed(2));
+        res.setHeader("X-Serialization-Time-Ms", serializationMs.toFixed(2));
+        res.setHeader("X-Payload-Bytes", String(payloadBytes));
+        res.setHeader("X-Total-Time-Ms", totalMs.toFixed(2));
+        res.status(200).send(payload);
     } catch (error) {
+        console.log(
+            `[PERF] /api/auth/products failed after ${(performance.now() - requestStart).toFixed(2)} ms`
+        );
         console.log("🔥 GET PRODUCTS ERROR 🔥", error)
         res.status(500).json({
             message: "Failed to fetch products",

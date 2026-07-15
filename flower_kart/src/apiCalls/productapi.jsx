@@ -2,8 +2,20 @@ import axios from "axios";
 
 export const getProducts = async () => {
   const URL = import.meta.env.VITE_MONGO_URI + "/products";
+  const requestStart = performance.now();
+
   try {
     const response = await axios.get(URL);
+    const totalMs = performance.now() - requestStart;
+
+    console.log("[PERF] getProducts network total:", {
+      totalMs: totalMs.toFixed(2),
+      backendTotalMs: response.headers["x-total-time-ms"],
+      backendQueryMs: response.headers["x-query-time-ms"],
+      backendSerializationMs: response.headers["x-serialization-time-ms"],
+      payloadBytes: response.headers["x-payload-bytes"],
+    });
+
     return response.data;
   } catch (error) {
     console.error("🔥 GET PRODUCTS ERROR 🔥", error);
