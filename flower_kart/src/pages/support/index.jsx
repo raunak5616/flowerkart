@@ -1,132 +1,101 @@
 import { useState } from "react";
+import { SectionIntro } from "../../components/ui/SectionIntro";
+import { useToast } from "../../components/ui/ToastProvider.jsx";
 
 export default function Support() {
+  const { notify } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-    alert("Support request submitted!");
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    notify({
+      title: "Support request submitted",
+      message: "We've captured your message and a support response flow can plug into this screen next.",
+      type: "success",
+    });
+    setFormData({ name: "", email: "", message: "" });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-
-      {/* HERO SECTION */}
-      <section className="bg-red-gradient text-white py-12 text-center">
-        <h1 className="text-3xl font-bold">flowerKart Support</h1>
-        <p className="mt-2 text-sm">
-          We're here to help you 24/7 🚀
-        </p>
-      </section>
-
-      {/* QUICK HELP CARDS */}
-      <section className="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow hover:shadow-md transition">
-          <h3 className="font-semibold text-lg mb-2">Order Issues</h3>
-          <p className="text-gray-600 text-sm">
-            Track, cancel or modify your order easily.
+    <div className="bg-shell pb-20 pt-8">
+      <div className="mx-auto max-w-6xl px-4 md:px-6">
+        <section className="surface-card rounded-[40px] bg-premium-gradient px-7 py-10 text-white md:px-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-100/80">Help center</p>
+          <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">
+            Fast answers for orders, delivery, payments, and care.
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-rose-50/85 md:text-base">
+            Support works better when it feels as trustworthy as checkout. This page now introduces clearer help paths and a cleaner contact form.
           </p>
-        </div>
+        </section>
 
-        <div className="bg-white p-6 rounded-xl shadow hover:shadow-md transition">
-          <h3 className="font-semibold text-lg mb-2">Payment Help</h3>
-          <p className="text-gray-600 text-sm">
-            Facing payment problems? We're here.
-          </p>
-        </div>
+        <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-6">
+            {[
+              ["local_shipping", "Track an order", "See fulfillment progress, delivery updates, and delays without hunting through multiple screens."],
+              ["payments", "Resolve payment issues", "Get help for failed attempts, duplicate charges, or payment verification concerns."],
+              ["favorite", "Request bouquet changes", "Need a delivery note or gifting adjustment? Start the support flow here."],
+            ].map(([icon, title, text]) => (
+              <div key={title} className="surface-card rounded-[30px] p-6">
+                <span className="material-symbols-outlined rounded-full bg-rose-50 p-3 text-rose-500">
+                  {icon}
+                </span>
+                <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-slate-950">{title}</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{text}</p>
+              </div>
+            ))}
+          </div>
 
-        <div className="bg-white p-6 rounded-xl shadow hover:shadow-md transition">
-          <h3 className="font-semibold text-lg mb-2">Returns & Refunds</h3>
-          <p className="text-gray-600 text-sm">
-            Easy returns and fast refunds.
-          </p>
-        </div>
-      </section>
-
-      {/* CONTACT FORM */}
-      <section className="max-w-3xl mx-auto px-4 pb-12">
-        <div className="bg-white p-8 rounded-2xl shadow">
-          <h2 className="text-xl font-bold mb-6 text-center">
-            Contact Support
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="text"
-              name="name"
-              placeholder="Your Name"
-              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-red-500"
-              onChange={handleChange}
-              required
+          <div className="surface-card rounded-[32px] p-6 md:p-8">
+            <SectionIntro
+              eyebrow="Contact support"
+              title="Tell us what went wrong"
+              description="A more polished support form should guide the customer clearly and respond with confidence after submission."
             />
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Your Email"
-              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-red-500"
-              onChange={handleChange}
-              required
-            />
-
-            <textarea
-              name="message"
-              rows="4"
-              placeholder="Describe your issue..."
-              className="w-full border rounded-md p-3 outline-none focus:ring-2 focus:ring-red-500"
-              onChange={handleChange}
-              required
-            ></textarea>
-
-            <button
-              type="submit"
-              className="w-full bg-red-gradient text-white py-3 rounded-md hover:opacity-90 transition"
-            >
-              Submit Request
-            </button>
-          </form>
-        </div>
-      </section>
-
-      {/* FAQ SECTION */}
-      <section className="max-w-4xl mx-auto px-4 pb-16">
-        <h2 className="text-xl font-bold mb-6 text-center">
-          Frequently Asked Questions
-        </h2>
-
-        <div className="space-y-4">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h4 className="font-semibold">How can I track my order?</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Go to your profile → Orders → Track.
-            </p>
+            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                placeholder="Your name"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+                onChange={handleChange}
+                required
+              />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                placeholder="Your email"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+                onChange={handleChange}
+                required
+              />
+              <textarea
+                name="message"
+                rows="6"
+                value={formData.message}
+                placeholder="Describe the issue you're facing"
+                className="w-full rounded-3xl border border-slate-200 px-4 py-4 text-sm outline-none transition focus:border-rose-300"
+                onChange={handleChange}
+                required
+              />
+              <button type="submit" className="cta-button w-full px-6 py-4 text-sm">
+                Submit support request
+              </button>
+            </form>
           </div>
-
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h4 className="font-semibold">How long does delivery take?</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Usually within 30–60 minutes depending on location.
-            </p>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h4 className="font-semibold">How do I request a refund?</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Contact support using the form above.
-            </p>
-          </div>
-        </div>
-      </section>
-
+        </section>
+      </div>
     </div>
   );
 }

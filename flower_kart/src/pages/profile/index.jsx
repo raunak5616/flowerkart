@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../context/auth.context";
-import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getProfile } from "../../apiCalls/productapi";
+import { useToast } from "../../components/ui/ToastProvider.jsx";
+import { useAuth } from "../../context/auth.context";
+
 export default function Profile() {
+  const { notify } = useToast();
   const { logout, user: authUser } = useAuth();
-  const navigater = useNavigate();
-  const [popup, setpopup] = useState(false);
-  const [image, setimage] = useState(null);
+  const navigate = useNavigate();
+  const [popup, setPopup] = useState(false);
+  const [image, setImage] = useState(null);
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -17,21 +19,21 @@ export default function Profile() {
   });
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showOrderDetails, setShowOrderDetails] = useState(false);
 
   useEffect(() => {
     const userId = authUser?._id;
-    if (!userId) return;
+    if (!userId) {
+      return;
+    }
 
     const fetchProfile = async (id) => {
       const data = await getProfile(id);
       setUser(data || { name: "", email: "", phone: "", address: "" });
     };
+
     const fetchOrders = async (id) => {
       try {
-        console.log("Fetching orders for userId:", id);
-        const response = await axios.get(`http://localhost:5000/orders/${id}`);
-        console.log("Orders received:", response.data);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/orders/${id}`);
         setOrders(response.data);
       } catch (err) {
         console.error("Error fetching orders:", err);
@@ -41,8 +43,9 @@ export default function Profile() {
     fetchProfile(userId);
     fetchOrders(userId);
   }, [authUser]);
-  const handleSave = async (e) => {
-    e.preventDefault();
+
+  const handleSave = async (event) => {
+    event.preventDefault();
     const formdata = new FormData();
     formdata.append("name", user.name);
     formdata.append("email", user.email);
@@ -52,234 +55,239 @@ export default function Profile() {
     if (image) {
       formdata.append("images", image);
     }
+
     try {
       const token = localStorage.getItem("token");
-      console.log("Token:", token); // ✅ add this for debugging
-      const response = await axios.post(`${import.meta.env.VITE_MONGO_URI}/profileUpdate`, formdata,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // ✅ IMPORTANT
-          },
-        }
-      );
-      alert(response.data.message);
-      setpopup(false);
-      // Make API call to save updated profile
+      const response = await axios.post(`${import.meta.env.VITE_MONGO_URI}/profileUpdate`, formdata, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      notify({
+        title: "Profile updated",
+        message: response.data.message,
+        type: "success",
+      });
+      setPopup(false);
     } catch (err) {
       if (err.response?.status === 401) {
-        alert("Session expired. Please login again.");
+        notify({
+          title: "Session expired",
+          message: "Please login again to continue.",
+          type: "error",
+        });
         logout();
-        navigater("/login");
-        // redirect to login
-        console.log("error updating profile❌❌:", err);
+        navigate("/login");
       }
     }
-  }
-  const handleCloseDetails = () => {
-    setShowOrderDetails(false);
-    setSelectedOrder(null);
-  }
+  };
+
   return (
-    <div className="relative">
-      {/* MAIN CONTENT (Blurred when any popup is open) */}
-      <div className={`min-h-screen bg-gray-50 p-6 transition-all duration-300 ${showOrderDetails || popup ? "pointer-events-none" : ""}`}>
-        <div className="max-w-5xl mx-auto">
-          {/* PROFILE HEADER */}
-          <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col md:flex-row items-center gap-6">
-            <div className="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-3xl font-bold overflow-hidden">
-              {user?.images?.url ? (
-                <img src={user.images.url} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                user?.name?.charAt(0) || "U"
-              )}
+    <div className="bg-shell pb-20 pt-8">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <section className="surface-card rounded-[40px] p-6 md:p-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-5">
+              <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-rose-100 text-3xl font-semibold text-rose-600">
+                {user?.images?.url ? (
+                  <img src={user.images.url} alt="Profile" className="h-full w-full object-cover" />
+                ) : (
+                  user?.name?.charAt(0) || "U"
+                )}
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">My account</p>
+                <h1 className="mt-2 text-4xl font-semibold tracking-[-0.04em] text-slate-950">{user.name || "Your profile"}</h1>
+                <p className="mt-2 text-sm leading-7 text-slate-600">{user.email}</p>
+              </div>
             </div>
-
-            <div className="text-center md:text-left">
-              <h2 className="text-2xl font-semibold text-gray-800">{user.name}</h2>
-              <p className="text-gray-500">{user.email}</p>
-              <button
-                className="mt-3 bg-red-gradient text-white px-4 py-1 rounded-md hover:opacity-90 transition"
-                onClick={() => setpopup(true)}
-              >
-                Edit Profile
-              </button>
-            </div>
+            <button type="button" onClick={() => setPopup(true)} className="cta-button px-6 py-3 text-sm">
+              Edit profile
+            </button>
           </div>
+        </section>
 
-          {/* PROFILE DETAILS */}
-          <div className="grid md:grid-cols-2 gap-6 mt-8">
-            <div className="bg-white rounded-2xl shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm text-gray-500">Full Name</label>
-                  <input type="text" value={user?.name || ""} className="w-full border rounded-md p-2 mt-1 bg-gray-50" readOnly />
+        <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-6">
+            <div className="surface-card rounded-[32px] p-6">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Personal information</h2>
+              <div className="mt-5 space-y-4 text-sm">
+                <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Full name</p>
+                  <p className="mt-2 font-medium text-slate-800">{user?.name || "Not provided"}</p>
                 </div>
-                <div>
-                  <label className="text-sm text-gray-500">Email</label>
-                  <input type="email" value={user?.email || ""} className="w-full border rounded-md p-2 mt-1 bg-gray-50" readOnly />
+                <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Email</p>
+                  <p className="mt-2 font-medium text-slate-800">{user?.email || "Not provided"}</p>
                 </div>
-                <div>
-                  <label className="text-sm text-gray-500">Phone</label>
-                  <input type="text" value={user?.phone || ""} className="w-full border rounded-md p-2 mt-1 bg-gray-50" readOnly />
+                <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Phone</p>
+                  <p className="mt-2 font-medium text-slate-800">{user?.phone || "Not provided"}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Delivery Address</h3>
-              <textarea rows="5" value={user?.address || ""} className="w-full border rounded-md p-3 bg-gray-50" readOnly />
-              <button className="mt-4 bg-red-gradient text-white px-4 py-2 rounded-md hover:opacity-90 transition">
-                Change Address
-              </button>
+            <div className="surface-card rounded-[32px] p-6">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Delivery address</h2>
+              <p className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50/70 p-4 text-sm leading-7 text-slate-600">
+                {user?.address || "No saved delivery address yet."}
+              </p>
             </div>
           </div>
 
-          {/* ORDER HISTORY */}
-          <div className="bg-white rounded-2xl shadow-md p-6 mt-8">
-            <h3 className="text-lg font-semibold mb-4">Recent Orders</h3>
-            <div className="space-y-3">
+          <div className="surface-card rounded-[32px] p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">Recent orders</p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-slate-950">Order history</h2>
+              </div>
+              <span className="rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white">
+                {orders.length} total
+              </span>
+            </div>
+
+            <div className="mt-6 space-y-4">
               {orders.length > 0 ? (
                 orders.map((order) => (
-                  <div key={order._id} className="flex justify-between items-center border-b pb-3 hover:bg-gray-50 p-2 rounded-lg transition">
-                    <div>
-                      <p className="font-medium text-gray-800">Order #{order.razorpay_order_id?.slice(-6).toUpperCase() || "N/A"}</p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(order.createdAt).toLocaleDateString()} • ₹{order.amount}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end">
-                      <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${order.status === "Success" ? "bg-green-100 text-green-700" :
-                        order.status === "Pending" ? "bg-yellow-100 text-yellow-700" :
-                          "bg-red-100 text-red-700"
+                  <div key={order._id} className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          Order reference
+                        </p>
+                        <p className="mt-2 text-lg font-semibold text-slate-900">
+                          #{order.razorpay_order_id?.slice(-6).toUpperCase() || "N/A"}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-600">
+                          {new Date(order.createdAt).toLocaleDateString()} • ₹{order.amount}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${
+                          order.status === "Success"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : order.status === "Pending"
+                            ? "bg-amber-50 text-amber-700"
+                            : "bg-rose-50 text-rose-700"
                         }`}>
-                        {order.status}
-                      </span>
-                      <button
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setShowOrderDetails(true);
-                        }}
-                        className="text-red-500 text-xs mt-1 hover:underline"
-                      >
-                        Details
-                      </button>
+                          {order.status}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedOrder(order)}
+                          className="secondary-button px-4 py-2 text-sm"
+                        >
+                          View details
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-6 text-gray-500 italic">No orders found yet.</div>
+                <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+                  No orders found yet. Your upcoming purchases will appear here with clearer tracking and status detail.
+                </div>
               )}
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* EDIT PROFILE POPUP (OUTSIDE BLUR) */}
-      {popup && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex justify-center items-center z-[60] p-4">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
-            <input
-              type="text"
-              placeholder="Name"
-              value={user?.name || ""}
-              onChange={(e) => setUser({ ...user, name: e.target.value })}
-              className="w-full border p-2 mb-3 rounded focus:ring-2 focus:ring-red-500 outline-none"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={user?.email || ""}
-              onChange={(e) => setUser({ ...user, email: e.target.value })}
-              className="w-full border p-2 mb-3 rounded focus:ring-2 focus:ring-red-500 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Phone"
-              value={user?.phone || ""}
-              onChange={(e) => setUser({ ...user, phone: e.target.value })}
-              className="w-full border p-2 mb-3 rounded focus:ring-2 focus:ring-red-500 outline-none"
-            />
-            <textarea
-              placeholder="Address"
-              value={user?.address || ""}
-              onChange={(e) => setUser({ ...user, address: e.target.value })}
-              className="w-full border p-2 mb-3 rounded focus:ring-2 focus:ring-red-500 outline-none"
-            />
-            <input
-              type="file"
-              onChange={(e) => setimage(e.target.files[0])}
-              className="block w-full text-sm text-red-600 mb-4 cursor-pointer"
-            />
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setpopup(false)} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">Cancel</button>
-              <button onClick={handleSave} className="px-4 py-2 bg-red-gradient text-white rounded-lg hover:opacity-90 transition">Save</button>
+      {popup ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[32px] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.22)]">
+            <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Edit profile</h2>
+            <div className="mt-5 space-y-3">
+              <input
+                type="text"
+                placeholder="Name"
+                value={user?.name || ""}
+                onChange={(event) => setUser({ ...user, name: event.target.value })}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={user?.email || ""}
+                onChange={(event) => setUser({ ...user, email: event.target.value })}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+              />
+              <input
+                type="text"
+                placeholder="Phone"
+                value={user?.phone || ""}
+                onChange={(event) => setUser({ ...user, phone: event.target.value })}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+              />
+              <textarea
+                placeholder="Address"
+                value={user?.address || ""}
+                onChange={(event) => setUser({ ...user, address: event.target.value })}
+                className="w-full rounded-3xl border border-slate-200 px-4 py-4 text-sm outline-none transition focus:border-rose-300"
+              />
+              <input
+                type="file"
+                onChange={(event) => setImage(event.target.files[0])}
+                className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-rose-50 file:px-4 file:py-2 file:text-rose-600"
+              />
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ORDER DETAILS POPUP (OUTSIDE BLUR) */}
-      {showOrderDetails && selectedOrder && (
-        <div className="fixed inset-0 flex justify-center items-center z-[70] p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-md" onClick={handleCloseDetails}></div>
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl relative z-10 overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="bg-red-gradient p-6 text-white flex justify-between items-center">
-              <h3 className="text-xl font-bold">Order Summary</h3>
-              <button onClick={handleCloseDetails} className="text-white hover:rotate-90 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setPopup(false)} className="secondary-button px-5 py-3 text-sm">
+                Cancel
+              </button>
+              <button type="button" onClick={handleSave} className="cta-button px-5 py-3 text-sm">
+                Save changes
               </button>
             </div>
+          </div>
+        </div>
+      ) : null}
 
-            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-bold">Order ID</p>
-                  <p className="font-mono text-xs">{selectedOrder.razorpay_order_id}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-bold">Status</p>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${selectedOrder.status === "Success" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                    }`}>
-                    {selectedOrder.status}
-                  </span>
-                </div>
-              </div>
-
-              {selectedOrder.razorpay_payment_id && (
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-bold">Payment ID</p>
-                  <p className="font-mono text-xs">{selectedOrder.razorpay_payment_id}</p>
-                </div>
-              )}
-
-              <div className="border-t pt-4">
-                <p className="text-xs text-gray-500 uppercase font-bold mb-2">Items</p>
-                <div className="space-y-2">
-                  {selectedOrder.items?.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-sm bg-gray-50 p-2 rounded">
-                      <span>{item.name || item.title} (x{item.quantity || 1})</span>
-                      <span className="font-bold">₹{item.price}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t pt-4 flex justify-between items-center">
-                <p className="text-lg font-bold">Total</p>
-                <p className="text-2xl font-black text-red-600">₹{selectedOrder.amount}</p>
+      {selectedOrder ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-[32px] bg-white shadow-[0_20px_60px_rgba(15,23,42,0.22)]">
+            <div className="rounded-t-[32px] bg-premium-gradient px-6 py-5 text-white">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-semibold tracking-[-0.03em]">Order summary</h3>
+                <button type="button" onClick={() => setSelectedOrder(null)} className="rounded-full bg-white/10 p-2">
+                  <span className="material-symbols-outlined text-base">close</span>
+                </button>
               </div>
             </div>
 
-            <div className="p-4 bg-gray-50 border-t flex justify-end">
-              <button onClick={handleCloseDetails} className="bg-red-gradient text-white px-6 py-2 rounded-lg font-bold">Close</button>
+            <div className="max-h-[70vh] space-y-4 overflow-y-auto p-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Order ID</p>
+                  <p className="mt-2 text-sm font-medium text-slate-800">{selectedOrder.razorpay_order_id}</p>
+                </div>
+                <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Status</p>
+                  <p className="mt-2 text-sm font-medium text-slate-800">{selectedOrder.status}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {selectedOrder.items?.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between gap-4 rounded-[20px] border border-slate-200 bg-white p-4">
+                    <div>
+                      <p className="font-medium text-slate-800">{item.name || item.title}</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">Qty {item.quantity || item.qty || 1}</p>
+                    </div>
+                    <p className="font-semibold text-slate-900">₹{item.price}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                <p className="text-lg font-semibold text-slate-950">Total</p>
+                <p className="text-2xl font-semibold text-rose-600">₹{selectedOrder.amount}</p>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

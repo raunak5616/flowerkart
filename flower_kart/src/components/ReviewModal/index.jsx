@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from "@headlessui/react";
 import { Fragment } from "react";
 import { submitReview } from "../../apiCalls/productapi";
+import { useToast } from "../ui/ToastProvider.jsx";
 
 const ReviewModal = ({ order, isOpen, onClose }) => {
+  const { notify } = useToast();
   const [shopRating, setShopRating] = useState(5);
   const [productRatings, setProductRatings] = useState({}); // {productId: rating}
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,10 +32,19 @@ const ReviewModal = ({ order, isOpen, onClose }) => {
         shopRating,
         productFeedbacks
       });
+      notify({
+        title: "Review submitted",
+        message: "Thanks for rating your order experience.",
+        type: "success",
+      });
       onClose(true); // pass true to indicate successful submission
     } catch (error) {
       console.error("Failed to submit review", error);
-      alert("Something went wrong while submitting your review.");
+      notify({
+        title: "Review submission failed",
+        message: "Something went wrong while submitting your review.",
+        type: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }

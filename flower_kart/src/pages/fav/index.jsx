@@ -1,24 +1,44 @@
+import { Link } from "react-router-dom";
 import RecipeReviewCard from "../../components/productCard";
-import { useCart } from "../../context/card.context/useCartContext"
+import { EmptyState } from "../../components/ui/EmptyState";
+import { SectionIntro } from "../../components/ui/SectionIntro";
+import { useCart } from "../../context/card.context/useCartContext";
 
-const fav = () => {
-    const { favourite } = useCart();
+const Fav = () => {
+  const { favourite } = useCart();
 
-    return (
-        <main className="flex flex-wrap gap-6 justify-center mt-4 p-4">
-            {
-                favourite.length > 0 ? (
-                    favourite.map((item) => (
-                        <div key={item._id || item.id} className="flex" style={{ width: "345px" }}>
-                            <RecipeReviewCard product={item} />
-                        </div>
-                    ))
-                ) : (
-                    <p className="w-full text-center text-gray-500 mt-10">No favorite items</p>
-                )
-            }
-        </main>
-    )
-}
+  return (
+    <div className="bg-shell pb-20 pt-8">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <SectionIntro
+          eyebrow="Wishlist"
+          title="Saved for later, without losing momentum"
+          description="Your wishlist should feel like a thoughtful holding space, not just a recycled product grid."
+        />
 
-export default fav;
+        <div className="mt-8">
+          {favourite.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {favourite.map((item) => (
+                <RecipeReviewCard key={item._id || item.id} product={item} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon="favorite"
+              title="No saved favorites yet"
+              description="Browse the catalog and save a few options to compare later. A stronger empty state keeps wishlisting useful instead of feeling abandoned."
+              action={
+                <Link to="/products" className="cta-button px-6 py-3 text-sm">
+                  Discover products
+                </Link>
+              }
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Fav;

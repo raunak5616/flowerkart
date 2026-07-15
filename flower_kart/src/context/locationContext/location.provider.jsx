@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { LocationContext } from "./location.context";
+import { useToast } from "../../components/ui/ToastProvider.jsx";
 
 export const LocationProvider = ({ children }) => {
+  const { notify } = useToast();
   const [address, setAddress] = useState(() => {
     return localStorage.getItem("deliveryAddress") || "Select Location";
   });
@@ -12,7 +14,11 @@ export const LocationProvider = ({ children }) => {
   });
   const detectLocation = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation not supported");
+      notify({
+        title: "Location not supported",
+        message: "Your browser does not support geolocation.",
+        type: "error",
+      });
       return;
     }
 
@@ -34,7 +40,12 @@ export const LocationProvider = ({ children }) => {
         localStorage.setItem("deliveryAddress", shortAddress);
         localStorage.setItem("deliveryCoordinates", JSON.stringify({ lat: latitude, lng: longitude }));
       },
-      () => alert("Please allow location access")
+      () =>
+        notify({
+          title: "Location permission denied",
+          message: "Please allow location access so we can estimate delivery more accurately.",
+          type: "error",
+        })
     );
   };
 

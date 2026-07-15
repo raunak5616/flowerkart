@@ -6,6 +6,7 @@ import Contact from "../../pages/contact";
 import Shop from "../../pages/shop";
 import Support from "../../pages/support";
 import Product from "../../pages/product";
+import ProductDetail from "../../pages/productDetail";
 import Login from "../../pages/login";
 import Signup from "../../pages/signup";
 import Profile from "../../pages/profile";
@@ -34,6 +35,7 @@ const AppRouter = () => {
         <Route path="/shop" element={<Shop />} />
         <Route path="/Support" element={<Support />} />
         <Route path="/Products" element={<Product />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/profile" element={<Profile />} />

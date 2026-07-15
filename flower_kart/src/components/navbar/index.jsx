@@ -2,30 +2,32 @@ import {
   Disclosure,
   DisclosureButton,
   DisclosurePanel,
+  Dialog,
+  DialogPanel,
+  DialogTitle,
   Menu,
   MenuButton,
   MenuItem,
   MenuItems,
   Transition,
-  Dialog,
-  DialogPanel,
-  DialogTitle,
 } from "@headlessui/react";
-
-import { useLocationContext } from "../../context/locationContext/useLocationContext";
-import { Bars3Icon, XMarkIcon, BellIcon } from "@heroicons/react/24/outline";
+import { BellIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Fragment, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Fragment, useState, useEffect } from "react";
-import { useAuth } from "../../context/auth.context";
 import { getProfile } from "../../apiCalls/productapi";
+import { useToast } from "../ui/ToastProvider.jsx";
+import { useLocationContext } from "../../context/locationContext/useLocationContext";
+import { useAuth } from "../../context/auth.context";
+
 const navigation = [
   { name: "Home", href: "/" },
-  { name: "Shop", href: "/shop" },
   { name: "Products", href: "/products" },
+  { name: "Shops", href: "/shop" },
   { name: "Support", href: "/support" },
 ];
 
 export default function Navbar() {
+  const { notify } = useToast();
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
   const { address, setAddress, coordinates, detectLocation } = useLocationContext();
@@ -37,12 +39,18 @@ export default function Navbar() {
     street: "",
     landmark: "",
     pincode: "",
-    phone: ""
+    phone: "",
   });
 
-  const handleSearch = (e) => {
-    if (e.key === "Enter" && searchTerm.trim()) {
+  const handleSearchSubmit = () => {
+    if (searchTerm.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  const handleSearch = (event) => {
+    if (event.key === "Enter") {
+      handleSearchSubmit();
     }
   };
 
@@ -62,57 +70,101 @@ export default function Navbar() {
 
   const handleCartClick = () => {
     if (!isAuthenticated) {
-      alert("Please login to access cart");
+      notify({
+        title: "Login required",
+        message: "Please sign in before continuing to your cart.",
+        type: "info",
+      });
       navigate("/login");
-    } else {
-      navigate("/cart");
+      return;
     }
+
+    navigate("/cart");
+  };
+
+  const confirmLocation = () => {
+    if (!addressDetails.houseNo || !addressDetails.street || !addressDetails.pincode || !addressDetails.phone) {
+      notify({
+        title: "Missing address details",
+        message: "Please fill all required address fields first.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (address === "Select Location") {
+      notify({
+        title: "Detect your location first",
+        message: "Use auto-detect so we can anchor the rest of your address correctly.",
+        type: "info",
+      });
+      return;
+    }
+
+    const parts = [
+      `House: ${addressDetails.houseNo}`,
+      `Street: ${addressDetails.street}`,
+      addressDetails.landmark ? `Landmark: ${addressDetails.landmark}` : "",
+      `City/State: ${address}`,
+      `Pincode: ${addressDetails.pincode}`,
+      `Phone: ${addressDetails.phone}`,
+    ].filter(Boolean);
+
+    const finalAddress = parts.join(", ");
+    if (setAddress) {
+      setAddress(finalAddress);
+    }
+    localStorage.setItem("deliveryAddress", finalAddress);
+    setIsLocationModalOpen(false);
+    notify({
+      title: "Delivery address saved",
+      message: "Your next order will use this address.",
+      type: "success",
+    });
   };
 
   return (
-    <Disclosure as="nav" className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-
-          {/* LEFT SIDE */}
-          <div className="flex items-center gap-6">
-
-            {/* LOGO */}
-            <div
-              className="text-xl font-bold text-red-600 cursor-pointer"
+    <Disclosure as="nav" className="sticky top-0 z-50 border-b border-white/60 bg-white/85 backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <div className="flex min-h-[84px] items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3 md:gap-6">
+            <button
+              type="button"
               onClick={() => navigate("/")}
+              className="text-left"
             >
-              flowerKart
-            </div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
+                Fresh delivery
+              </p>
+              <p className="text-2xl font-semibold tracking-[-0.04em] text-slate-950">
+                flowerKart
+              </p>
+            </button>
 
-            {/* LOCATION */}
-            <div
+            <button
+              type="button"
               onClick={() => setIsLocationModalOpen(true)}
-              className="hidden sm:flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1 rounded-md"
+              className="hidden rounded-full border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition hover:border-rose-200 hover:bg-rose-50/60 md:block"
             >
-              <span className="material-symbols-outlined text-red-600">
-                location_on
-              </span>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Deliver to
+              </p>
+              <p className="mt-1 max-w-[180px] truncate text-sm font-medium text-slate-700">
+                {address}
+              </p>
+            </button>
+          </div>
 
-              <div className="flex flex-col leading-tight">
-                <span className="text-xs text-gray-500">Deliver to</span>
-                <span className="text-sm font-semibold truncate max-w-[160px]">
-                  {address}
-                </span>
-              </div>
-            </div>
-
-            {/* DESKTOP NAVIGATION */}
-            <div className="hidden lg:flex gap-6">
+          <div className="hidden flex-1 items-center justify-center lg:flex">
+            <div className="flex rounded-full border border-slate-200 bg-slate-50/75 p-1">
               {navigation.map((item) => (
                 <NavLink
                   key={item.name}
                   to={item.href}
                   end
                   className={({ isActive }) =>
-                    `px-3 py-2 rounded-md text-sm font-medium transition ${isActive
-                      ? "bg-red-gradient text-white shadow-lg"
-                      : "text-gray-700 hover:bg-gray-100"
+                    `rounded-full px-4 py-2 text-sm font-medium transition ${
+                      isActive ? "bg-slate-950 text-white shadow-sm" : "text-slate-600 hover:bg-white hover:text-slate-950"
                     }`
                   }
                 >
@@ -122,100 +174,108 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* RIGHT SIDE */}
-          <div className="flex items-center gap-4">
-
-            {/* SEARCH (Desktop only) */}
-            <div className="hidden lg:flex items-center border border-gray-300 rounded-md px-3 py-1.5 focus-within:border-green-500 transition-colors">
-              <span className="material-symbols-outlined text-gray-500 text-[20px]">
-                search
-              </span>
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="hidden items-center rounded-full border border-slate-200 bg-white px-3 py-2 shadow-sm md:flex">
+              <span className="material-symbols-outlined text-[20px] text-slate-400">search</span>
               <input
                 type="text"
-                placeholder="Search products"
+                placeholder="Search bouquets, roses, orchids..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(event) => setSearchTerm(event.target.value)}
                 onKeyDown={handleSearch}
-                className="ml-2 w-40 bg-transparent text-sm outline-none"
+                className="ml-2 w-56 bg-transparent text-sm outline-none"
               />
+              <button
+                type="button"
+                onClick={handleSearchSubmit}
+                className="ml-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-500"
+              >
+                Go
+              </button>
             </div>
 
-            {/* CART */}
             <button
+              type="button"
               onClick={handleCartClick}
-              className="p-2 rounded-md hover:bg-gray-100"
+              className="rounded-full border border-slate-200 bg-white p-3 shadow-sm transition hover:border-rose-200 hover:bg-rose-50/60"
+              aria-label="Cart"
             >
-              <span className="material-symbols-outlined text-[22px]">
-                shopping_cart
-              </span>
+              <span className="material-symbols-outlined text-[22px] text-slate-700">shopping_cart</span>
             </button>
 
             <button
+              type="button"
               onClick={() => navigate("/favorite")}
-              className="p-2 rounded-md hover:bg-gray-100">
-              <span className="material-symbols-outlined">
-                favorite
-              </span>
+              className="rounded-full border border-slate-200 bg-white p-3 shadow-sm transition hover:border-rose-200 hover:bg-rose-50/60"
+              aria-label="Wishlist"
+            >
+              <span className="material-symbols-outlined text-[22px] text-slate-700">favorite</span>
             </button>
 
-            {/* NOTIFICATION */}
-            <button className="p-2 rounded-md hover:bg-gray-100">
-              <BellIcon className="h-6 w-6 text-gray-700" />
+            <button
+              type="button"
+              className="hidden rounded-full border border-slate-200 bg-white p-3 shadow-sm transition hover:border-rose-200 hover:bg-rose-50/60 md:flex"
+              aria-label="Notifications"
+            >
+              <BellIcon className="h-5 w-5 text-slate-700" />
             </button>
 
-            {/* PROFILE MENU (Desktop only) */}
             <Menu as="div" className="relative hidden lg:block">
-              <MenuButton className="flex items-center focus:outline-none">
+              <MenuButton className="overflow-hidden rounded-full border border-slate-200 shadow-sm transition hover:border-rose-200">
                 <img
-                  className="h-9 w-9 rounded-full object-cover border-2 border-transparent hover:border-red-500 transition-all shadow-sm"
+                  className="h-11 w-11 object-cover"
                   src={avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"}
                   alt="Profile"
                 />
               </MenuButton>
-
               <Transition
                 as={Fragment}
                 enter="transition duration-200"
-                enterFrom="opacity-0 scale-95 translate-y-[-10px]"
-                enterTo="opacity-100 scale-100 translate-y-0"
+                enterFrom="opacity-0 translate-y-1 scale-95"
+                enterTo="opacity-100 translate-y-0 scale-100"
                 leave="transition duration-150"
-                leaveFrom="opacity-100 scale-100 translate-y-0"
-                leaveTo="opacity-0 scale-95 translate-y-[-10px]"
+                leaveFrom="opacity-100 translate-y-0 scale-100"
+                leaveTo="opacity-0 translate-y-1 scale-95"
               >
-                <MenuItems className="absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-black/5 overflow-hidden origin-top-right z-[60]">
-                  <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                    <p className="text-xs text-gray-500 font-medium">Signed in as</p>
-                    <p className="text-sm font-bold text-gray-900 truncate">
-                      {user?.email || "Guest User"}
+                <MenuItems className="absolute right-0 mt-3 w-64 rounded-[28px] border border-slate-200 bg-white p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                  <div className="rounded-[22px] bg-slate-50 p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      Signed in as
+                    </p>
+                    <p className="mt-2 truncate text-sm font-semibold text-slate-950">
+                      {user?.email || "Guest user"}
                     </p>
                   </div>
-                  <div className="p-2">
+                  <div className="mt-2 space-y-1">
                     {isAuthenticated ? (
                       <>
                         <MenuItem>
-                          {({ active }) => (
+                          {({ focus }) => (
                             <button
+                              type="button"
                               onClick={() => navigate("/profile")}
-                              className={`${active ? 'bg-red-50 text-red-600' : 'text-gray-700'
-                                } group flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors`}
+                              className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium ${
+                                focus ? "bg-rose-50 text-rose-600" : "text-slate-700"
+                              }`}
                             >
-                              <span className="material-symbols-outlined mr-3 text-[20px]">person</span>
-                              My Profile
+                              <span className="material-symbols-outlined text-base">person</span>
+                              My profile
                             </button>
                           )}
                         </MenuItem>
-
                         <MenuItem>
-                          {({ active }) => (
+                          {({ focus }) => (
                             <button
+                              type="button"
                               onClick={() => {
                                 logout();
                                 navigate("/login");
                               }}
-                              className={`${active ? 'bg-red-50 text-red-600' : 'text-gray-700'
-                                } group flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors`}
+                              className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium ${
+                                focus ? "bg-rose-50 text-rose-600" : "text-slate-700"
+                              }`}
                             >
-                              <span className="material-symbols-outlined mr-3 text-[20px]">logout</span>
+                              <span className="material-symbols-outlined text-base">logout</span>
                               Logout
                             </button>
                           )}
@@ -223,13 +283,15 @@ export default function Navbar() {
                       </>
                     ) : (
                       <MenuItem>
-                        {({ active }) => (
+                        {({ focus }) => (
                           <button
+                            type="button"
                             onClick={() => navigate("/login")}
-                            className={`${active ? 'bg-red-50 text-red-600' : 'text-gray-700'
-                              } group flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors`}
+                            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium ${
+                              focus ? "bg-rose-50 text-rose-600" : "text-slate-700"
+                            }`}
                           >
-                            <span className="material-symbols-outlined mr-3 text-[20px]">login</span>
+                            <span className="material-symbols-outlined text-base">login</span>
                             Login / Sign up
                           </button>
                         )}
@@ -240,219 +302,184 @@ export default function Navbar() {
               </Transition>
             </Menu>
 
-            {/* MOBILE MENU BUTTON */}
-            <DisclosureButton className="lg:hidden p-2 rounded-md hover:bg-gray-100">
-              <Bars3Icon className="h-6 w-6 text-gray-700 data-open:hidden" />
-              <XMarkIcon className="h-6 w-6 text-gray-700 hidden data-open:block" />
+            <DisclosureButton className="rounded-full border border-slate-200 bg-white p-3 shadow-sm transition hover:border-rose-200 lg:hidden">
+              <Bars3Icon className="h-5 w-5 text-slate-700 data-open:hidden" />
+              <XMarkIcon className="hidden h-5 w-5 text-slate-700 data-open:block" />
             </DisclosureButton>
           </div>
         </div>
       </div>
 
-      {/* MOBILE PANEL */}
-      <DisclosurePanel className="lg:hidden bg-white border-t border-gray-200">
-
-        <div className="space-y-1 px-4 py-3 flex flex-col">
-
-          {/* Navigation */}
-          {navigation.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              end
-              className={({ isActive }) =>
-                `px-3 py-2 rounded-md text-base font-medium ${isActive
-                  ? "bg-red-gradient text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-                }`
-              }
-            >
-              {item.name}
-            </NavLink>
-          ))}
-
-          <hr className="my-2" />
-
-          {/* Auth Section */}
-          {isAuthenticated ? (
-            <>
-              <button
-                onClick={() => {
-                  if (!user?._id) return;
-                  navigate("/profile");
-                }}
-                className="text-left px-3 py-2 text-base hover:bg-gray-100 rounded-md"
-              >
-                Profile
-              </button>
-
-              <button
-                onClick={() => {
-                  logout();
-                  navigate("/login");
-                }}
-                className="text-left px-3 py-2 text-base hover:bg-gray-100 rounded-md text-red-600"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="text-left px-3 py-2 text-base hover:bg-gray-100 rounded-md"
-            >
-              Login
-            </button>
-          )}
-        </div>
-
-        {/* Mobile Search */}
-        <div className="px-4 pb-4">
-          <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:border-green-500">
-            <span className="material-symbols-outlined text-gray-500">
-              search
-            </span>
+      <DisclosurePanel className="border-t border-slate-100 bg-white px-4 pb-5 pt-3 lg:hidden">
+        <div className="space-y-3">
+          <div className="flex items-center rounded-full border border-slate-200 bg-slate-50/75 px-3 py-2">
+            <span className="material-symbols-outlined text-[20px] text-slate-400">search</span>
             <input
               type="text"
-              placeholder="Search products"
+              placeholder="Search bouquets, roses, orchids..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(event) => setSearchTerm(event.target.value)}
               onKeyDown={handleSearch}
               className="ml-2 w-full bg-transparent text-sm outline-none"
             />
           </div>
+          <button
+            type="button"
+            onClick={() => setIsLocationModalOpen(true)}
+            className="w-full rounded-[22px] border border-slate-200 bg-white px-4 py-3 text-left shadow-sm"
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Deliver to</p>
+            <p className="mt-1 text-sm font-medium text-slate-700">{address}</p>
+          </button>
+          <div className="grid gap-2">
+            {navigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                end
+                className={({ isActive }) =>
+                  `rounded-[18px] px-4 py-3 text-sm font-medium transition ${
+                    isActive ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-700"
+                  }`
+                }
+              >
+                {item.name}
+              </NavLink>
+            ))}
+            {isAuthenticated ? (
+              <>
+                <button type="button" onClick={() => navigate("/profile")} className="rounded-[18px] bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700">
+                  Profile
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                  }}
+                  className="rounded-[18px] bg-rose-50 px-4 py-3 text-left text-sm font-medium text-rose-600"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={() => navigate("/login")} className="rounded-[18px] bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700">
+                Login / Sign up
+              </button>
+            )}
+          </div>
         </div>
-
       </DisclosurePanel>
 
-      {/* LOCATION MODAL */}
       <Dialog open={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all">
-            <DialogTitle className="text-xl font-bold text-gray-900 mb-2">Delivery Details</DialogTitle>
-            <p className="text-sm text-gray-500 mb-6">Enter your exact location so our partners can find you easily.</p>
-            
-            <div className="space-y-4">
+          <DialogPanel className="w-full max-w-2xl rounded-[32px] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.22)] md:p-8">
+            <DialogTitle className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+              Set your delivery address
+            </DialogTitle>
+            <p className="mt-2 text-sm leading-7 text-slate-600">
+              A stronger checkout starts with a trustworthy address step, so this modal now captures both fast detection and exact doorstep details.
+            </p>
+
+            <div className="mt-6 grid gap-4">
               <button
+                type="button"
                 onClick={detectLocation}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-600 rounded-xl font-medium hover:bg-blue-100 transition-colors"
+                className="secondary-button w-full px-5 py-3 text-sm"
               >
-                <span className="material-symbols-outlined text-[20px]">my_location</span>
-                Auto-detect (City/State)
+                <span className="material-symbols-outlined text-base">my_location</span>
+                Auto-detect city and state
               </button>
 
-              {coordinates && (
-                <div className="w-full h-40 rounded-xl overflow-hidden border border-gray-200 mt-2 shadow-inner">
+              {coordinates ? (
+                <div className="overflow-hidden rounded-[24px] border border-slate-200 shadow-sm">
                   <iframe
                     title="Location Map"
                     width="100%"
-                    height="100%"
+                    height="220"
                     frameBorder="0"
                     scrolling="no"
                     marginHeight="0"
                     marginWidth="0"
                     src={`https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.lng - 0.005},${coordinates.lat - 0.005},${coordinates.lng + 0.005},${coordinates.lat + 0.005}&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`}
-                  ></iframe>
-                </div>
-              )}
-
-              <div className="relative flex items-center py-2">
-                <div className="flex-grow border-t border-gray-200"></div>
-                <span className="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium uppercase tracking-wider">and</span>
-                <div className="flex-grow border-t border-gray-200"></div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">House/Flat No *</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 101"
-                      value={addressDetails.houseNo}
-                      onChange={(e) => setAddressDetails({ ...addressDetails, houseNo: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Pincode *</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 400001"
-                      value={addressDetails.pincode}
-                      onChange={(e) => setAddressDetails({ ...addressDetails, pincode: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Street/Area *</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. MG Road, Near Park"
-                    value={addressDetails.street}
-                    onChange={(e) => setAddressDetails({ ...addressDetails, street: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
+              ) : null}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Landmark</label>
-                    <input
-                      type="text"
-                      placeholder="Optional"
-                      value={addressDetails.landmark}
-                      onChange={(e) => setAddressDetails({ ...addressDetails, landmark: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Phone *</label>
-                    <input
-                      type="text"
-                      placeholder="10-digit number"
-                      value={addressDetails.phone}
-                      onChange={(e) => setAddressDetails({ ...addressDetails, phone: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                    />
-                  </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    House / flat no
+                  </label>
+                  <input
+                    type="text"
+                    value={addressDetails.houseNo}
+                    onChange={(event) => setAddressDetails({ ...addressDetails, houseNo: event.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+                    placeholder="e.g. 101"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Pincode
+                  </label>
+                  <input
+                    type="text"
+                    value={addressDetails.pincode}
+                    onChange={(event) => setAddressDetails({ ...addressDetails, pincode: event.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+                    placeholder="e.g. 400001"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Street / area
+                  </label>
+                  <input
+                    type="text"
+                    value={addressDetails.street}
+                    onChange={(event) => setAddressDetails({ ...addressDetails, street: event.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+                    placeholder="MG Road, Near Park"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Landmark
+                  </label>
+                  <input
+                    type="text"
+                    value={addressDetails.landmark}
+                    onChange={(event) => setAddressDetails({ ...addressDetails, landmark: event.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+                    placeholder="Optional"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={addressDetails.phone}
+                    onChange={(event) => setAddressDetails({ ...addressDetails, phone: event.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300"
+                    placeholder="10-digit number"
+                  />
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                 <button
-                  onClick={() => {
-                    if (!addressDetails.houseNo || !addressDetails.street || !addressDetails.pincode || !addressDetails.phone) {
-                      alert("Please fill all required fields (*)");
-                      return;
-                    }
-                    if (address === "Select Location") {
-                      alert("Please use Auto-detect to set your City/State first.");
-                      return;
-                    }
-
-                    const parts = [
-                      `House: ${addressDetails.houseNo}`,
-                      `Street: ${addressDetails.street}`,
-                      addressDetails.landmark ? `Landmark: ${addressDetails.landmark}` : '',
-                      `City/State: ${address}`,
-                      `Pincode: ${addressDetails.pincode}`,
-                      `Phone: ${addressDetails.phone}`
-                    ].filter(Boolean);
-                    
-                    const finalAddress = parts.join(", ");
-                    if(setAddress) setAddress(finalAddress);
-                    localStorage.setItem("deliveryAddress", finalAddress);
-                    setIsLocationModalOpen(false);
-                    // Retain the form details or clear them depending on preference. 
-                    // Keeping them makes it easier to edit later.
-                  }}
-                  className="w-full py-3 bg-red-gradient text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-md"
+                  type="button"
+                  onClick={() => setIsLocationModalOpen(false)}
+                  className="secondary-button px-5 py-3 text-sm"
                 >
-                  Confirm Location
+                  Cancel
+                </button>
+                <button type="button" onClick={confirmLocation} className="cta-button px-5 py-3 text-sm">
+                  Save delivery address
                 </button>
               </div>
             </div>
